@@ -6,8 +6,8 @@ const handleCastErrorDB = err => {
 };
 
 const handleDuplicateFieldsDB = err => {
-  const duplicateName = err.errmsg.split('"')[1];
-  const message = `Duplicate field value: '${duplicateName}'. Please use another name`;
+  const duplicateValue = err.errmsg.split('"')[1];
+  const message = `Duplicate field value: '${duplicateValue}'. Please use another value`;
   return new AppError(message, 400);
 };
 
@@ -16,6 +16,9 @@ const handleValidationErrorDB = err => {
   const message = `Invalid input data: ${errors.join('; ')}`;
   return new AppError(message, 400);
 };
+
+const handleJWTError = () => new AppError('Invalid token. Please log in again', 401); // eslint-disable-line
+const handleJWTExpired = () => new AppError('Your token has expired. Please log in again', 401); // eslint-disable-line
 
 const sendErrorDev = (err, res) => {
   res.status(err.statusCode).json({
@@ -51,7 +54,9 @@ module.exports = (err, req, res, next) => {
     let error = { ...err };
     if (error.name === 'CastError') error = handleCastErrorDB(error);
     if (error.code === 11000) error = handleDuplicateFieldsDB(error);
-    if (error.name === 'ValidationError') error = handleValidationErrorDB(error);
+    if (error.name === 'ValidationError') error = handleValidationErrorDB(error); // eslint-disable-line
+    if (error.name === 'JsonWebTokenError') error = handleJWTError();
+    if (error.name === 'TokenExpiredError') error = handleJWTExpired();
     sendErrorProd(error, res);
   }
 };
