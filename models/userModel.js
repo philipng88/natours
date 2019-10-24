@@ -39,7 +39,12 @@ const userSchema = new mongoose.Schema({
   },
   passwordChangedAt: Date,
   passwordResetToken: String,
-  passwordResetExpires: Date
+  passwordResetExpires: Date,
+  active: {
+    type: Boolean,
+    default: true,
+    select: false
+  }
 });
 
 userSchema.pre('save', async function(next) {
@@ -55,6 +60,11 @@ userSchema.pre('save', function(next) {
   next();
 });
 
+userSchema.pre(/^find/, function(next) {
+  this.find({ active: { $ne: false } });
+  next();
+});
+
 userSchema.methods.correctPassword = async function(
   candidatePassword,
   userPassword
@@ -64,7 +74,10 @@ userSchema.methods.correctPassword = async function(
 
 userSchema.methods.changedPasswordAfter = function(JWTTimestamp) {
   if (this.passwordChangedAt) {
-    const changedTimestamp = parseInt(this.passwordChangedAt.getTime() / 1000, 10); // eslint-disable-line
+    const changedTimestamp = parseInt(
+      this.passwordChangedAt.getTime() / 1000,
+      10
+    ); // eslint-disable-line
     return JWTTimestamp < changedTimestamp;
   }
   return false;
@@ -72,7 +85,10 @@ userSchema.methods.changedPasswordAfter = function(JWTTimestamp) {
 
 userSchema.methods.createPasswordResetToken = function() {
   const resetToken = crypto.randomBytes(32).toString('hex');
-  this.passwordResetToken = crypto.createHash('sha256').update(resetToken).digest('hex'); // eslint-disable-line
+  this.passwordResetToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex'); // eslint-disable-line
   this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
   return resetToken;
 };
