@@ -135,12 +135,6 @@ tourSchema.pre('save', function(next) {
   next();
 });
 
-// tourSchema.pre('save', async function(next) {
-//   const guidesPromises = this.guides.map(async id => await User.findById(id));
-//   this.guides = await Promise.all(guidesPromises);
-//   next();
-// });
-
 tourSchema.pre(/^find/, function(next) {
   this.find({ secretTour: { $ne: true } });
   this.start = Date.now();
@@ -153,14 +147,9 @@ tourSchema.pre(/^find/, function(next) {
     select: '-__v -passwordChangedAt -passwordResetExpires -passwordResetToken'
   });
   next();
-})
-
-// Query Middleware
-tourSchema.post(/^find/, function(docs, next) {
-  console.log(`Query took ${Date.now() - this.start} milliseconds`);
-  next();
 });
 
+// Query Middleware
 tourSchema.pre('aggregate', function(next) {
   this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
   next();
