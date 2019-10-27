@@ -42,6 +42,7 @@ app.use('/api', limiter);
 
 // Body parser and cookie parser
 app.use(express.json({ limit: '10kb' }));
+app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(cookieParser());
 
 // Data sanitization to prevent NoSQL query injections
