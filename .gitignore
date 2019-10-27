@@ -4,5 +4,8 @@ dev-data
 public/img/tours
 public/img/users
 public/js/mapbox.js
+public/js/bundle.js
+public/js/bundle.js.map
+.cache
 .eslintrc.json
 .prettierrc
